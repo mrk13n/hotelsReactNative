@@ -19,7 +19,6 @@ exports.checkLogin = (req, res) => {
 };
 
 exports.registration = (req, res) => {
-    const username = req.body.email;
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
     const secondName = req.body.secondName;
@@ -41,7 +40,6 @@ exports.registration = (req, res) => {
                 bcrypt.genSalt(saltRounds, (err, salt) => {
                     bcrypt.hash(password, salt, (err, hash) => {
                         const newUser = new Users({
-                            username: username,
                             firstName: firstName,
                             lastName: lastName,
                             secondName: secondName,
@@ -50,14 +48,13 @@ exports.registration = (req, res) => {
                             balance: balance
                         });
 
-                        newUser.save((user) => {
-                            console.log(user);
+                        newUser.save((err, user) => {
+                            if (err) res.send(err);
                             req.session.user = {
                                 firstName: user.firstName,
                                 lastName: user.lastName,
                                 balance: user.balance
                             };
-                            console.log(req.session.user);
                             res.send({
                                 newUser: true,
                                 user: req.session.user
