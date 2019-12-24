@@ -111,3 +111,20 @@ exports.logout = (req, res) => {
         });
     });
 };
+
+exports.getHotels = (req, res) => {
+    Hotels.find({}, (err, hotels) => {
+        if (err) res.send(err);
+        res.send(hotels);
+    });
+};
+
+exports.getRooms = (req, res) => {
+    const hotelId = req.body.hotelId;
+    Rooms.find({
+        hotelId: hotelId
+    }, (err, rooms) => {
+        if (err) res.send(err);
+        res.send(rooms);
+    })
+};

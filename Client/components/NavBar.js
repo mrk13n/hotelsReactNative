@@ -1,5 +1,5 @@
 import React from 'react';
-import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 
 const NavBar = props => {
 
@@ -7,10 +7,26 @@ const NavBar = props => {
         return user.firstName + ' ' + user.lastName;
     };
 
+    const logout = () => {
+        props.setIsLoading(true);
+        props.logout();
+    };
+
+    const exit = () => {
+        Alert.alert(
+            'Выход',
+            'Вы действительно хотите выйти?',
+            [
+                { text: 'Нет', style: 'cancel' },
+                { text: 'Да', onPress: logout },
+            ]
+        );
+    };
+
     return (
         <View style={ style.container }>
             <View style={ style.name }>
-                <TouchableOpacity onPress={() => Alert.alert('aaa')}>
+                <TouchableOpacity onPress={ exit }>
                     <Text style={ {color: 'blue'} }>{ getName(props.user) }</Text>
                 </TouchableOpacity>
             </View>
@@ -28,7 +44,8 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: -25
+        marginTop: -15,
+        marginBottom: -20
     },
     name: {
         flex: 1,

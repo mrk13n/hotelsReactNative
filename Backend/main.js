@@ -10,16 +10,19 @@ const configureEndpoints = (app) => {
     app.post('/api/registration/', api.registration);
     app.post('/api/login/', api.login);
     app.get('/api/logout/', api.logout);
+    app.get('/api/getHotels/', api.getHotels);
+    app.post('/api/getRooms/', api.getRooms);
 };
 
 const startServer = (port) => {
     const app = express();
 
     app.use(morgan('dev'));
-    app.use(cors());
 
-    app.use(bodyParser.json({limit: '60mb'}));
-    app.use(bodyParser.urlencoded({ extended: false}));
+    app.use(bodyParser.urlencoded());
+    app.use(bodyParser.json());
+
+    app.use(cors());
 
     app.use(session({
         secret: "hotels"

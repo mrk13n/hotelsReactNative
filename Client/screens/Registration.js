@@ -1,14 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, Text, TextInput, Modal, Button, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, SafeAreaView, ScrollView, View, Text, TextInput, Button, Alert } from 'react-native';
+const axios = require('axios');
 
 const Registration = props => {
+    const { navigate } = props.navigation;
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [secondName, setSecondName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const URL = 'http://192.168.1.9:3030/api/registration/';
+
+    const registration = (data) => {
+        axios.post(URL, data)
+            .then(response => {
+                const data = response.data;
+                if (data.isExist) Alert.alert('Пользователь с таким email уже существует!');
+                if (data.newUser) navigate('Hotels', { user: data.user });
+            })
+            .catch(error => console.error(error));
+    };
 
     const changeFirstName = (text) => {
         setFirstName(text);
@@ -19,7 +32,7 @@ const Registration = props => {
     };
 
     const changeSecondName = (text) => {
-      setSecondName(text);
+        setSecondName(text);
     };
 
     const changeEmail = (text) => {
@@ -34,15 +47,6 @@ const Registration = props => {
         setConfirmPassword(text);
     };
 
-    const clear = () => {
-        setFirstName('');
-        setLastName('');
-        setSecondName('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-    };
-
     const signUp = () => {
         const data = {
             firstName: firstName,
@@ -52,26 +56,22 @@ const Registration = props => {
             password: password,
             confirmPassword: confirmPassword,
         };
-        if (validData(data)) props.registration(data);
+        if (validData(data)) {
+            setIsLoading(true);
+            registration(data);
+        }
     };
 
-    const goBack = () => {
-        clear();
-        props.back();
-    };
-
-    const goToSignIn = () => {
-        clear();
-        props.signIn();
-    };
-
-    return (
-        <Modal visible={ props.visible } animationType='slide'>
+    if (isLoading) {
+        return (
+            <View style={ style.container }>
+                <Text>Loading...</Text>
+            </View>
+        );
+    } else {
+        return (
             <SafeAreaView style={ style.container }>
                 <ScrollView showsVerticalScrollIndicator={ false }>
-                    <View style={ style.button }>
-                        <Button title='Назад' style={ style.button } onPress={ goBack } />
-                    </View>
                     <Text style={ style.text }>Имя</Text>
                     <TextInput placeholder='Имя' placeholderTextColor='grey' style={ style.input } onChangeText={ changeFirstName } value={ firstName } />
                     <Text style={ style.text }>Фамилия</Text>
@@ -86,12 +86,12 @@ const Registration = props => {
                     <TextInput placeholder='Подтверждение пароля' secureTextEntry={ true } placeholderTextColor='grey' style={ style.input } onChangeText={ changeConfirmPassword } value={ confirmPassword } />
                     <View style={style.button}>
                         <Button title='Регистрация' onPress={ signUp } />
-                        <Button title='Войти' onPress={ goToSignIn } />
+                        <Button title='Войти' onPress={ () => navigate('Authorization') } />
                     </View>
                 </ScrollView>
             </SafeAreaView>
-        </Modal>
-    );
+        );
+    }
 };
 
 const style = StyleSheet.create({

@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
-import {StyleSheet, Text, SafeAreaView, ScrollView, View, TextInput, Modal, Button, Alert} from 'react-native';
+import { StyleSheet, Text, SafeAreaView, ScrollView, View, TextInput, Button, Alert } from 'react-native';
+const axios = require('axios');
 
 const Authorization = props => {
+    const { navigate } = props.navigation;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const URL = 'http://192.168.1.9:3030/api/login/';
+
+    const login = (data) => {
+        axios.post(URL, data)
+            .then(response => {
+                const data = response.data;
+                if (data.incorrectPassword) Alert.alert('Пароль неверный!');
+                if (data.notFound) Alert.alert('Такого пользователя не существует!');
+                if (data.success) navigate('Hotels', { user: data.user });
+            })
+            .catch(error => console.error(error));
+    };
 
     const changeEmail = (text) => {
         setEmail(text);
@@ -13,48 +28,39 @@ const Authorization = props => {
         setPassword(text);
     };
 
-    const clear = () => {
-        setEmail('');
-        setPassword('');
-    };
-
     const signIn = () => {
         const data = {
             email: email,
             password: password
         };
-        if (validData(data)) props.login(data);
+        if (validData(data)) {
+            setIsLoading(true);
+            login(data);
+        }
     };
 
-    const goBack = () => {
-        clear();
-        props.back();
-    };
-
-    const gotToSignUp = () => {
-        clear();
-        props.signUp();
-    };
-
-    return (
-        <Modal visible={ props.visible } animationType='slide'>
+    if (isLoading) {
+        return (
+            <View style={ style.container }>
+                <Text>Loading...</Text>
+            </View>
+        );
+    } else {
+        return (
             <SafeAreaView style={ style.container }>
                 <ScrollView>
-                    <View style={ style.button }>
-                        <Button title='Назад' onPress={ goBack } />
-                    </View>
                     <Text style={ style.text }>Email</Text>
                     <TextInput placeholder='Email' placeholderTextColor='grey' style={ style.input } onChangeText={ changeEmail } value={ email } />
                     <Text style={ style.text }>Пароль</Text>
                     <TextInput placeholder='Пароль' secureTextEntry={ true } placeholderTextColor='grey' style={ style.input } onChangeText={ changePassword } value={ password } />
                     <View style={ style.button }>
                         <Button title='Вход' onPress={ signIn } />
-                        <Button title='Регистрация' onPress={ gotToSignUp } />
+                        <Button title='Регистрация' onPress={ () => navigate('Registration') } />
                     </View>
                 </ScrollView>
             </SafeAreaView>
-        </Modal>
-    );
+        );
+    }
 };
 
 const style = StyleSheet.create({
