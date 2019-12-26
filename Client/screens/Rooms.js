@@ -68,7 +68,7 @@ const Rooms = props => {
     if (isError) {
         return (
             <Container>
-                <LoadingText>Поизошла ошыбка!</LoadingText>
+                <LoadingText>Произошла ошыбка!</LoadingText>
             </Container>
         );
     }
@@ -76,7 +76,7 @@ const Rooms = props => {
     if (isLoading) {
         return (
             <Container>
-                <LoadingText>Loading...</LoadingText>
+                <LoadingText>Загрузка...</LoadingText>
             </Container>
         );
     }

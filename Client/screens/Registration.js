@@ -109,7 +109,7 @@ const Registration = props => {
     if (isError) {
         return (
             <Container>
-                <LoadingText>Поизошла ошыбка!</LoadingText>
+                <LoadingText>Произошла ошыбка!</LoadingText>
             </Container>
         );
     }
@@ -117,7 +117,7 @@ const Registration = props => {
     if (isLoading) {
         return (
             <Container>
-                <LoadingText>Loading...</LoadingText>
+                <LoadingText>Загрузка...</LoadingText>
             </Container>
         );
     }

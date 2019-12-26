@@ -81,7 +81,7 @@ const Authorization = props => {
     if (isError) {
         return (
             <Container>
-                <LoadingText>Поизошла ошыбка!</LoadingText>
+                <LoadingText>Произошла ошыбка!</LoadingText>
             </Container>
         );
     }

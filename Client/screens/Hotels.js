@@ -60,7 +60,7 @@ const Hotels = props => {
     if (isError) {
         return (
             <Container>
-                <LoadingText>Поизошла ошыбка!</LoadingText>
+                <LoadingText>Произошла ошыбка!</LoadingText>
             </Container>
         );
     }
@@ -68,7 +68,7 @@ const Hotels = props => {
     if (isLoading) {
         return (
             <Container>
-                <LoadingText>Loading...</LoadingText>
+                <LoadingText>Загрузка...</LoadingText>
             </Container>
         );
     }
