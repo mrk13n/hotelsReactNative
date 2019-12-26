@@ -4,12 +4,11 @@ import styled from 'styled-components';
 import NavBar from '../components/NavBar';
 import Exit from '../components/Exit';
 import CustomButton from '../components/CustomButton';
-import GetUser from '../components/GetUser';
 
 const Rooms = props => {
     const { navigate, state, goBack } = props.navigation;
     const hotel = state.params.hotel;
-    const [user, setUser] = useState(state.params.user);
+    const user = state.params.user;
     const [rooms, setRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
@@ -44,7 +43,6 @@ const Rooms = props => {
         };
 
         getRooms(hotel.id);
-        GetUser(user.id, setUser, setIsError);
 
         return () => {
             abortController.abort();

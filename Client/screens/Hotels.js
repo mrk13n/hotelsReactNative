@@ -3,7 +3,6 @@ import { ScrollView, TouchableOpacity } from 'react-native';
 import styled from 'styled-components';
 import NavBar from '../components/NavBar';
 import Exit from '../components/Exit';
-import GetUser from '../components/GetUser';
 
 const Hotels = props => {
     const { navigate, state } = props.navigation;
@@ -13,6 +12,7 @@ const Hotels = props => {
     const [isError, setIsError] = useState(false);
     const [exit, setExit] = useState(false);
     const URL = 'http://138.68.12.218:3030/api/getHotels/';
+    const getUserURL = 'http://138.68.12.218:3030/api/getUser/';
     Exit(exit, navigate, setIsError);
 
     useEffect(() => {
@@ -23,14 +23,33 @@ const Hotels = props => {
                 const response = await fetch(URL, { signal: abortController.signal });
                 const data = await response.json();
                 setHotels(data);
-                await GetUser(user.id, setUser, setIsError);
                 setIsLoading(false);
             } catch (error) {
                 if (!abortController.signal.aborted) setIsError(true);
             }
         };
 
-        getHotels();
+        const getUser = async (id) => {
+            try {
+                const settings = {
+                    method: 'POST',
+                    signal: abortController.signal,
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: id })
+                };
+                const response = await fetch(getUserURL, settings);
+                const data = await response.json();
+                if (data.notFound) setIsError(true);
+                if (!data.notFound) setUser(data.user);
+            } catch (error) {
+                if (!abortController.signal.aborted) setIsError(true);
+            }
+        };
+
+        getHotels().then(getUser(user.id));
 
         return () => {
             abortController.abort();

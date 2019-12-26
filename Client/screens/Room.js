@@ -1,20 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import styled from 'styled-components';
 import NavBar from '../components/NavBar';
 import Exit from '../components/Exit';
 import CustomButton from '../components/CustomButton';
-import GetUser from '../components/GetUser';
 
 const Room = props => {
     const { navigate, state, goBack } = props.navigation;
     const room = state.params.room;
-    const [user, setUser] = useState(state.params.user);
+    const user = state.params.user;
     const [isLoading, setIsLoading] = useState(false);
     const [isError, setIsError] = useState(false);
     const [exit, setExit] = useState(false);
     Exit(exit, navigate, setIsError);
-    GetUser(user.id, setUser, setIsError);
 
     const checkIfBalancePossibleToConfirm = () => {
         if (room.price > user.balance) {

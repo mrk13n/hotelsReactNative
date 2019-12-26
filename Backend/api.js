@@ -123,14 +123,17 @@ exports.getUser = (req, res) => {
         },
         (err, user) => {
             if (err) res.send(err);
-            console.log(user);
-            req.session.user = {
-                firstName: user.firstName,
-                lastName: user.lastName,
-                balance: user.balance,
-                id: user._id
-            };
-            res.send({ user: req.session.user });
+            if (user) {
+                req.session.user = {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    balance: user.balance,
+                    id: user._id
+                };
+                res.send({ user: req.session.user });
+            } else {
+                res.send({ notFound: true })
+            }
         }
     );
 };
