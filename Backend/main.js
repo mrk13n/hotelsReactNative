@@ -10,6 +10,7 @@ const configureEndpoints = (app) => {
     app.post('/api/registration/', api.registration);
     app.post('/api/login/', api.login);
     app.get('/api/logout/', api.logout);
+    app.post('/api/getUser/', api.getUser);
     app.get('/api/getHotels/', api.getHotels);
     app.post('/api/getRooms/', api.getRooms);
 };

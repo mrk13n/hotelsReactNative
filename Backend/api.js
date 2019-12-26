@@ -53,7 +53,8 @@ exports.registration = (req, res) => {
                             req.session.user = {
                                 firstName: user.firstName,
                                 lastName: user.lastName,
-                                balance: user.balance
+                                balance: user.balance,
+                                id: user._id
                             };
                             res.send({
                                 newUser: true,
@@ -83,7 +84,8 @@ exports.login = (req, res) => {
                     req.session.user = {
                         firstName: user.firstName,
                         lastName: user.lastName,
-                        balance: user.balance
+                        balance: user.balance,
+                        id: user._id
                     };
                     res.send({
                         success: true,
@@ -110,6 +112,26 @@ exports.logout = (req, res) => {
             end: true
         });
     });
+};
+
+exports.getUser = (req, res) => {
+    const id = req.body.id;
+
+    Users.findOne(
+        {
+            _id: id
+        },
+        (err, user) => {
+            if (err) res.send(err);
+            req.session.user = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                balance: user.balance,
+                id: user._id
+            };
+            res.send({ user: req.session.user });
+        }
+    );
 };
 
 exports.getHotels = (req, res) => {

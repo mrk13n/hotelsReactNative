@@ -3,10 +3,11 @@ import { ScrollView, TouchableOpacity } from 'react-native';
 import styled from 'styled-components';
 import NavBar from '../components/NavBar';
 import Exit from '../components/Exit';
+import GetUser from '../components/GetUser';
 
 const Hotels = props => {
     const { navigate, state } = props.navigation;
-    const user = state.params.user;
+    const [user, setUser] = useState(state.params.user);
     const [hotels, setHotels] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
@@ -22,6 +23,7 @@ const Hotels = props => {
                 const response = await fetch(URL, { signal: abortController.signal });
                 const data = await response.json();
                 setHotels(data);
+                await GetUser(user.id, setUser, setIsError);
                 setIsLoading(false);
             } catch (error) {
                 if (!abortController.signal.aborted) setIsError(true);
