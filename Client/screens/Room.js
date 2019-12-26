@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import styled from 'styled-components';
 import NavBar from '../components/NavBar';
