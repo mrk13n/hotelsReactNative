@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 const Exit = (exit, navigate, setIsError) => {
-    const URL = 'http://192.168.1.11:3030/api/logout/';
+    const URL = 'http://138.68.12.218:3030/api/logout/';
 
     useEffect(() => {
         const abortController = new AbortController();
