@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, Text, TextInput, Button, Alert } from 'react-native';
-const axios = require('axios');
+import React, { useEffect, useState } from 'react';
+import { ScrollView, Alert } from 'react-native';
+import styled from 'styled-components';
+import CustomButton from '../components/CustomButton';
 
 const Registration = props => {
-    const { navigate } = props.navigation;
+    const { navigate, goBack } = props.navigation;
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [secondName, setSecondName] = useState('');
@@ -11,17 +12,46 @@ const Registration = props => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const URL = 'http://192.168.1.9:3030/api/registration/';
+    const [isError, setIsError] = useState(false);
+    const [post, setPost] = useState(null);
+    const [log, setLog] = useState(false);
+    const URL = 'http://192.168.1.11:3030/api/registration/';
 
-    const registration = (data) => {
-        axios.post(URL, data)
-            .then(response => {
-                const data = response.data;
+    useEffect(() => {
+        const abortController = new AbortController();
+
+        const registration = async (post) => {
+
+            try {
+                const settings = {
+                    method: 'POST',
+                    signal: abortController.signal,
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(post)
+                };
+                const response = await fetch(URL, settings);
+                const data = await response.json();
                 if (data.isExist) Alert.alert('Пользователь с таким email уже существует!');
-                if (data.newUser) navigate('Hotels', { user: data.user });
-            })
-            .catch(error => console.error(error));
-    };
+                if (data.newUser) {
+                    navigate('Hotels', { user: data.user });
+                } else {
+                    setIsLoading(false);
+                    setLog(false);
+                }
+            } catch (error) {
+                if (!abortController.signal.aborted) setIsError(true);
+            }
+        };
+
+        if (log) registration(post);
+
+        return () => {
+            abortController.abort();
+        }
+    }, [log]);
 
     const changeFirstName = (text) => {
         setFirstName(text);
@@ -58,83 +88,97 @@ const Registration = props => {
         };
         if (validData(data)) {
             setIsLoading(true);
-            registration(data);
+            setPost(data);
+            setLog(true);
         }
     };
 
+    const validData = (data) => {
+        let valid = true;
+        if (data.firstName.length === 0 || data.secondName.length === 0 || data.lastName.length === 0 || data.email.length === 0 || data.password.length === 0 || data.confirmPassword.length === 0) {
+            valid = false;
+            Alert.alert('Заполните все поля!');
+        }
+        if (data.password !== data.confirmPassword) {
+            valid = false;
+            Alert.alert('Пароли не совпадают!');
+        }
+        return valid;
+    };
+
+    if (isError) {
+        return (
+            <Container>
+                <LoadingText>Поизошла ошыбка!</LoadingText>
+            </Container>
+        );
+    }
+
     if (isLoading) {
         return (
-            <View style={ style.container }>
-                <Text>Loading...</Text>
-            </View>
-        );
-    } else {
-        return (
-            <SafeAreaView style={ style.container }>
-                <ScrollView showsVerticalScrollIndicator={ false }>
-                    <Text style={ style.text }>Имя</Text>
-                    <TextInput placeholder='Имя' placeholderTextColor='grey' style={ style.input } onChangeText={ changeFirstName } value={ firstName } />
-                    <Text style={ style.text }>Фамилия</Text>
-                    <TextInput placeholder='Фамилия' placeholderTextColor='grey' style={ style.input } onChangeText={ changeLastName } value={ lastName } />
-                    <Text style={ style.text }>Отчество</Text>
-                    <TextInput placeholder='Отчество' placeholderTextColor='grey' style={ style.input } onChangeText={ changeSecondName } value={ secondName } />
-                    <Text style={ style.text }>Email</Text>
-                    <TextInput placeholder='Email' placeholderTextColor='grey' style={ style.input } onChangeText={ changeEmail } value={ email } />
-                    <Text style={ style.text }>Пароль</Text>
-                    <TextInput placeholder='Пароль' secureTextEntry={ true } placeholderTextColor='grey' style={ style.input } onChangeText={ changePassword } value={ password } />
-                    <Text style={ style.text }>Подтверждение пароля</Text>
-                    <TextInput placeholder='Подтверждение пароля' secureTextEntry={ true } placeholderTextColor='grey' style={ style.input } onChangeText={ changeConfirmPassword } value={ confirmPassword } />
-                    <View style={style.button}>
-                        <Button title='Регистрация' onPress={ signUp } />
-                        <Button title='Войти' onPress={ () => navigate('Authorization') } />
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
+            <Container>
+                <LoadingText>Loading...</LoadingText>
+            </Container>
         );
     }
+
+    return (
+        <Container>
+            <ScrollView showsVerticalScrollIndicator={ false }>
+                <ButtonsContainer>
+                    <CustomButton text='Назад' textColor='white' backgroundColor='#5A58FF' onPress={ () => goBack() }/>
+                </ButtonsContainer>
+                <PrimaryText>Имя</PrimaryText>
+                <Input placeholder='Имя' placeholderTextColor='grey' onChangeText={ changeFirstName } value={ firstName } />
+                <PrimaryText>Фамилия</PrimaryText>
+                <Input placeholder='Фамилия' placeholderTextColor='grey' onChangeText={ changeLastName } value={ lastName } />
+                <PrimaryText>Отчество</PrimaryText>
+                <Input placeholder='Отчество' placeholderTextColor='grey' onChangeText={ changeSecondName } value={ secondName } />
+                <PrimaryText>Email</PrimaryText>
+                <Input placeholder='Email' placeholderTextColor='grey' onChangeText={ changeEmail } value={ email } />
+                <PrimaryText>Пароль</PrimaryText>
+                <Input placeholder='Пароль' secureTextEntry={ true } placeholderTextColor='grey' onChangeText={ changePassword } value={ password } />
+                <PrimaryText>Подтверждение пароля</PrimaryText>
+                <Input placeholder='Подтверждение пароля' secureTextEntry={ true } placeholderTextColor='grey' onChangeText={ changeConfirmPassword } value={ confirmPassword } />
+                <ButtonsContainer>
+                    <CustomButton text='Регистрация' textColor='white' backgroundColor='#5A58FF' onPress={ signUp } />
+                    <CustomButton text='Вход' textColor='white' backgroundColor='#5A58FF' onPress={ () => navigate('Authorization') } />
+                </ButtonsContainer>
+            </ScrollView>
+        </Container>
+    );
 };
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#E6DFCF',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    text: {
-        margin: 10,
-        fontSize: 22
-    },
-    input: {
-        width: 300,
-        fontSize: 16,
-        color: 'black',
-        margin: 5,
-        padding: 10,
-        borderWidth: 1,
-        borderColor: 'grey',
-        borderRadius: 5,
-    },
-    button: {
-        margin: 10,
-        marginTop: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '50%'
-    }
-});
+const Container = styled.SafeAreaView`
+    flex: 1;
+    backgroundColor: #E6DFCF;
+    alignItems: center;
+    justifyContent: center;
+`;
 
-const validData = (data) => {
-    let valid = true;
-    if (data.firstName.length === 0 || data.secondName.length === 0 || data.lastName.length === 0 || data.email.length === 0 || data.password.length === 0 || data.confirmPassword.length === 0) {
-        valid = false;
-        Alert.alert('Заполните все поля!');
-    }
-    if (data.password !== data.confirmPassword) {
-        valid = false;
-        Alert.alert('Пароли не совпадают!');
-    }
-    return valid;
-};
+const LoadingText = styled.Text`
+    font-size: 30px;
+    text-align: center;
+    color: #B3ABAE;
+`;
+
+const PrimaryText = styled.Text`
+    font-size: 24px;
+    text-align: center;
+`;
+
+const ButtonsContainer = styled.View`
+    margin: 10px;
+    alignItems: center;
+`;
+
+const Input = styled.TextInput`
+    width: 300px;
+    color: black;
+    border: 1px solid grey;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px;
+`;
 
 export default Registration;

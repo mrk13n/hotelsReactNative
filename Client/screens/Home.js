@@ -1,69 +1,92 @@
-import React, { useState } from 'react';
-import {StyleSheet, Text, View, Alert, Button} from 'react-native';
-import {render} from "react-native-web";
-const axios = require('axios');
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import CustomButton from '../components/CustomButton';
 
 const Home = props => {
     const { navigate } = props.navigation;
-    const [user, setUser] = useState(undefined);
     const [isLoading, setIsLoading] = useState(true);
-    const URL = 'http://192.168.1.9:3030/api/checkLogin/';
+    const [isError, setIsError] = useState(false);
+    const URL = 'http://192.168.1.11:3030/api/checkLogin/';
 
-    const checkAuth = () => {
-        axios.get(URL)
-            .then(response => {
-                const data = response.data;
-                if (data.auth) setUser(data.user);
-                setIsLoading(false);
-            })
-            .catch(error => console.error(error));
-    };
+    useEffect(() => {
+        const abortController = new AbortController();
+
+        const checkAuth = async () => {
+            try {
+                const response = await fetch(URL, { signal: abortController.signal });
+                const data = await response.json();
+                if (data.auth) {
+                    navigate('Hotels', { user: data.user });
+                } else {
+                    setIsLoading(false);
+                }
+            } catch (error) {
+                if (!abortController.signal.aborted) setIsError(true);
+            }
+        };
+
+        checkAuth();
+
+        return () => {
+            abortController.abort();
+        }
+    }, [URL]);
+
+    if (isError) {
+        return (
+            <Container>
+                <LoadingText>Поизошла ошыбка!</LoadingText>
+            </Container>
+        );
+    }
 
     if (isLoading) {
-        checkAuth();
         return (
-            <View style={ styles.container }>
-                <Text>Loading...</Text>
-            </View>
+            <Container>
+                <LoadingText>Загрузка...</LoadingText>
+            </Container>
         );
-    } else {
-        if (user) {
-            return (navigate('Hotels', { user: user }));
-        } else {
-            return (
-                <View style={ styles.container }>
-                    <Text style={ styles.titleText }>Узнать всю информацию о любых отелях</Text>
-                    <Text style={ styles.text }>Войдите или зарегистрируйтесь</Text>
-                    <View style={ styles.button }>
-                        <Button title="Войти" onPress={ () => navigate('Authorization') } />
-                        <Button title="Регистрация" onPress={ () => navigate('Registration') } />
-                    </View>
-                </View>
-            );
-        }
     }
+
+    return (
+        <Container>
+            <PrimaryText>Узнать всю информацию о любых отелях</PrimaryText>
+            <SecondText>Войдите или зарегистрируйтесь</SecondText>
+            <ButtonsContainer>
+                <CustomButton text='Войти' textColor='white' backgroundColor='#5A58FF' onPress={ () => navigate('Authorization') }/>
+                <CustomButton text='Регистрация' textColor='white' backgroundColor='#5A58FF' onPress={ () => navigate('Registration') } />
+            </ButtonsContainer>
+        </Container>
+    );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#E6DFCF',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    titleText: {
-        fontSize: 24,
-        textAlign: 'center'
-    },
-    text: {
-        fontSize: 20,
-        color: '#B3ABAE',
-        textAlign: 'center'
-    },
-    button: {
-        margin: 10,
-        marginTop: 20
-    }
-});
+const Container = styled.View`
+    flex: 1;
+    backgroundColor: #E6DFCF;
+    alignItems: center;
+    justifyContent: center;
+`;
+
+const LoadingText = styled.Text`
+    font-size: 30px;
+    text-align: center;
+    color: #B3ABAE;
+`;
+
+const PrimaryText = styled.Text`
+    font-size: 24px;
+    text-align: center;
+`;
+
+const SecondText = styled.Text`
+    font-size: 20px;
+    color: #B3ABAE;
+    text-align: center;
+`;
+
+const ButtonsContainer = styled.View`
+    padding: 25px;
+    margin: 10px;
+`;
 
 export default Home;

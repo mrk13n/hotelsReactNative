@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { TouchableOpacity, Alert } from 'react-native';
+import styled from 'styled-components';
 
 const NavBar = props => {
 
@@ -9,7 +10,7 @@ const NavBar = props => {
 
     const logout = () => {
         props.setIsLoading(true);
-        props.logout();
+        props.setExit(true);
     };
 
     const exit = () => {
@@ -24,41 +25,43 @@ const NavBar = props => {
     };
 
     return (
-        <View style={ style.container }>
-            <View style={ style.name }>
+        <Container>
+            <NameContainer>
                 <TouchableOpacity onPress={ exit }>
-                    <Text style={ {color: 'blue'} }>{ getName(props.user) }</Text>
+                    <GeneralText color='#5A58FF'>{ getName(props.user) }</GeneralText>
                 </TouchableOpacity>
-            </View>
-            <View style={ style.balance }>
-                <Text style={ {color: '#FF4506'} }>{ props.user.balance } $</Text>
-            </View>
-        </View>
+            </NameContainer>
+            <BalanceContainer>
+                <GeneralText color='#59B566'>{ props.user.balance }$</GeneralText>
+            </BalanceContainer>
+        </Container>
     );
 };
 
-const style = StyleSheet.create({
-    container: {
-        flex: 0.1,
-        backgroundColor: '#E6DFCF',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: -15,
-        marginBottom: -20
-    },
-    name: {
-        flex: 1,
-        alignItems: 'flex-start',
-        justifyContent: 'flex-start',
-        padding: 5
-    },
-    balance: {
-        flex: 1,
-        alignItems: 'flex-end',
-        justifyContent: 'flex-end',
-        padding: 5
-    }
-});
+const Container = styled.SafeAreaView`
+    flex: 0.1;
+    backgroundColor: #E6DFCF;
+    flexDirection: row;
+    alignItems: center;
+    justifyContent: center;
+    margin-top: -10px;
+    margin-bottom: -20px;
+`;
+
+const NameContainer = styled.View`
+    flex: 1;
+    padding: 5px;
+`;
+
+const BalanceContainer = styled.View`
+    flex: 1;
+    alignItems: flex-end;
+    justifyContent: flex-end;
+    padding: 5px;
+`;
+
+const GeneralText = styled.Text`
+    color: ${ props => props.color };
+`;
 
 export default NavBar;

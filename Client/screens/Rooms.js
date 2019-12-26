@@ -1,27 +1,53 @@
-import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, Text, Modal, Button, TouchableOpacity, Alert } from 'react-native';
-const axios = require('axios');
-
-import NavBar from "../components/NavBar";
+import React, { useState, useEffect } from 'react';
+import { ScrollView, TouchableOpacity, } from 'react-native';
+import styled from 'styled-components';
+import NavBar from '../components/NavBar';
+import Exit from '../components/Exit';
+import CustomButton from '../components/CustomButton';
 
 const Rooms = props => {
-    const { navigate, state } = props.navigation;
+    const { navigate, state, goBack } = props.navigation;
     const user = state.params.user;
     const hotel = state.params.hotel;
     const [rooms, setRooms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const getRoomsURL = '/api/getRooms/';
-    const logoutURL = '/api/logout/';
-    const URL = 'http://192.168.1.9:3030';
+    const [isError, setIsError] = useState(false);
+    const [exit, setExit] = useState(false);
+    const URL = 'http://192.168.1.11:3030/api/getRooms/';
+    Exit(exit, navigate, setIsError);
 
-    const logout = () => {
-        axios.get(URL + logoutURL)
-            .then(response => {
-                const data = response.data;
-                // if (data.end) console.log('logout');
-            })
-            .catch(error => console.error(error));
-    };
+    useEffect(() => {
+        const abortController = new AbortController();
+
+        const getRooms = async (id) => {
+            try {
+                const post = {
+                    signal: abortController.signal,
+                    hotelId: id
+                };
+                const settings = {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(post)
+                };
+                const response = await fetch(URL, settings);
+                const data = await response.json();
+                setRooms(data);
+                setIsLoading(false);
+            } catch (error) {
+                if (!abortController.signal.aborted) setIsError(false);
+            }
+        };
+
+        getRooms(hotel.id);
+
+        return () => {
+            abortController.abort();
+        }
+    }, [URL]);
 
     const hotelRooms = (room) => {
 
@@ -31,82 +57,95 @@ const Rooms = props => {
 
         return (
             <TouchableOpacity activeOpacity={ 0.6 } key={ room._id } onPress={ goToRoom }>
-                <View style={ style.roomContainer }>
-                    <Text style={ style.titleRoom }>{ room.room }</Text>
-                    <Text>{ room.description }</Text>
-                </View>
+                <RoomContainer>
+                    <PrimaryText>{ room.room }</PrimaryText>
+                    <GeneralText>{ room.description }</GeneralText>
+                </RoomContainer>
             </TouchableOpacity>
         );
     };
 
-    const getRooms = (id) => {
-        axios.post(URL + getRoomsURL, { hotelId: id})
-            .then(response => {
-                const data = response.data;
-                setRooms(data);
-                setIsLoading(false);
-            })
-            .catch(error => console.error(error));
-    };
+    if (isError) {
+        return (
+            <Container>
+                <LoadingText>Поизошла ошыбка!</LoadingText>
+            </Container>
+        );
+    }
 
     if (isLoading) {
-        getRooms(hotel.id);
         return (
-            <View style={ style.container }>
-                <Text>Loading...</Text>
-            </View>
-        );
-    } else {
-        return (
-            <View style={ style.container }>
-                <NavBar user={ user } logout={ logout } setIsLoading={ setIsLoading } />
-                <SafeAreaView style={ style.container }>
-                    <View style={ style.titleContainer }>
-                        <Text style={ style.title }>Комнаты отеля</Text>
-                        <Text style={ style.subtitle }>{ hotel.name }</Text>
-                    </View>
-                    <ScrollView showsVerticalScrollIndicator={ false }>
-                        { rooms.map(oneRoom => hotelRooms(oneRoom)) }
-                    </ScrollView>
-                </SafeAreaView>
-            </View>
+            <Container>
+                <LoadingText>Loading...</LoadingText>
+            </Container>
         );
     }
+
+    return (
+        <Container>
+            <NavBar user={ user } setExit={ setExit } setIsLoading={ setIsLoading } />
+            <Container>
+                <TitleContainer>
+                    <PrimaryText>Комнаты отеля</PrimaryText>
+                    <PrimaryHotelText>{ hotel.name }</PrimaryHotelText>
+                    <ButtonsContainer>
+                        <CustomButton text='Назад' textColor='white' backgroundColor='#5A58FF' onPress={ () => goBack() } />
+                    </ButtonsContainer>
+                </TitleContainer>
+                <ScrollView showsVerticalScrollIndicator={ false }>
+                    { rooms.map(oneRoom => hotelRooms(oneRoom)) }
+                </ScrollView>
+            </Container>
+        </Container>
+    );
 };
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#E6DFCF',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    titleContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    titleRoom: {
-        fontSize: 24,
-        fontWeight: '700',
-    },
-    title: {
-        fontSize: 22,
-        fontWeight: '300'
-    },
-    subtitle: {
-        fontSize: 20,
-        fontWeight: '600'
-    },
-    roomContainer: {
-        backgroundColor: '#fff',
-        margin: 5,
-        padding: 10,
-        borderWidth: 1,
-        borderColor: 'grey',
-        borderRadius: 10,
-        flexDirection: 'row',
-        flexWrap: 'wrap'
-    }
-});
+const Container = styled.SafeAreaView`
+    flex: 1;
+    backgroundColor: #E6DFCF;
+    alignItems: center;
+    justifyContent: center;
+`;
+
+const TitleContainer = styled.View`
+    alignItems: center;
+    justifyContent: center;
+`;
+
+const RoomContainer = styled.View`
+    backgroundColor: #fff;
+    margin: 5px;
+    padding: 10px;
+    flexDirection: row;
+    border: 1px solid grey;
+    border-radius: 10px;
+    flexWrap: wrap;
+`;
+
+const LoadingText = styled.Text`
+    font-size: 30px;
+    text-align: center;
+    color: #B3ABAE;
+`;
+
+const PrimaryText = styled.Text`
+    font-size: 24px;
+    text-align: center;
+`;
+
+const PrimaryHotelText = styled.Text`
+    font-size: 24px;
+    font-weight: bold;
+`;
+
+const GeneralText = styled.Text`
+    font-size: 15px;
+    color: #7D7D7D;
+`;
+
+const ButtonsContainer = styled.View`
+    margin: 10px;
+    alignItems: center;
+`;
 
 export default Rooms;

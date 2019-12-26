@@ -1,24 +1,18 @@
-import React, {useState} from 'react';
-import { StyleSheet, SafeAreaView, ScrollView, View, Text, Button, Modal, Alert } from 'react-native';
-
-import NavBar from "../components/NavBar";
+import React, { useState } from 'react';
+import { ScrollView, Alert } from 'react-native';
+import styled from 'styled-components';
+import NavBar from '../components/NavBar';
+import Exit from '../components/Exit';
+import CustomButton from '../components/CustomButton';
 
 const Room = props => {
-    const { navigate, state } = props.navigation;
+    const { navigate, state, goBack } = props.navigation;
     const [isLoading, setIsLoading] = useState(false);
+    const [isError, setIsError] = useState(false);
+    const [exit, setExit] = useState(false);
     const user = state.params.user;
     const room = state.params.room;
-    const logoutURL = '/api/logout/';
-    const URL = 'http://192.168.1.9:3030';
-
-    const logout = () => {
-        axios.get(URL + logoutURL)
-            .then(response => {
-                const data = response.data;
-                // if (data.end) console.log('logout');
-            })
-            .catch(error => console.error(error));
-    };
+    Exit(exit, navigate, setIsError);
 
     const checkIfBalancePossibleToConfirm = () => {
         if (room.price > user.balance) {
@@ -31,110 +25,132 @@ const Room = props => {
     const roomAccessibility = (accessibility) => {
         if (accessibility) {
             return (
-                <View style={ style.accessibilityContainer }>
-                    <Text style={ style.access }>Доступен</Text>
-                    <View style={ style.buttonContainer }>
-                        <Button title='Забронировать' onPress={ checkIfBalancePossibleToConfirm } color='green' />
-                    </View>
-                </View>
+                <AccessibilityContainer>
+                    <AccessibilityText color='green'>Доступен</AccessibilityText>
+                    <ButtonsContainer>
+                        <CustomButton text='Забронировать' textColor='white' backgroundColor='green' onPress={ checkIfBalancePossibleToConfirm } />
+                    </ButtonsContainer>
+                </AccessibilityContainer>
             );
         } else {
             return (
-                <View style={ style.accessibilityContainer }>
-                    <Text style={ style.notAccess }>Недоступен</Text>
-                    <View style={ style.buttonContainer }>
-                        <Button title='Забронировать' disabled />
-                    </View>
-                </View>
+                <AccessibilityContainer>
+                    <AccessibilityText color='red'>Недоступен</AccessibilityText>
+                    <ButtonsContainer>
+                        <CustomButton text='Забронировать' textColor='red' backgroundColor='#A2A3A8' disabled={ true } />
+                    </ButtonsContainer>
+                </AccessibilityContainer>
             );
         }
     };
 
+    if (isError) {
+        return (
+            <Container>
+                <LoadingText>Поизошла ошыбка!</LoadingText>
+            </Container>
+        );
+    }
+
     if (isLoading) {
         return (
-            <View style={ style.container }>
-                <Text>Loading...</Text>
-            </View>
-        );
-    } else {
-        return (
-            <View style={ style.container }>
-                <NavBar user={ user } logout={ logout } setIsLoading={ setIsLoading } />
-                <SafeAreaView style={ style.container }>
-                    <ScrollView showsVerticalScrollIndicator={ false }>
-                        <View style={ style.titleContainer }>
-                            <Text style={ style.title }>Комната { room.room }</Text>
-                        </View>
-                        <View style={ style.description }>
-                            <Text style={ style.subtitle }>Описание: </Text>
-                            <Text style={ style.text }>{ room.description }</Text>
-                        </View>
-                        <View style={ style.infoContainer }>
-                            <Text style={ style.subtitle }>Цена: </Text>
-                            <Text style={ style.text }>{ room.price } $</Text>
-                        </View>
-                        <View style={ style.infoContainer }>
-                            <Text style={ style.subtitle }>Тип: </Text>
-                            <Text style={ style.text }>{ room.type }</Text>
-                        </View>
-                        { roomAccessibility(room.accessibility) }
-                    </ScrollView>
-                </SafeAreaView>
-            </View>
+            <Container>
+                <LoadingText>Loading...</LoadingText>
+            </Container>
         );
     }
+
+    return (
+        <Container>
+            <NavBar user={ user } setExit={ setExit } setIsLoading={ setIsLoading } />
+            <Container>
+                <ScrollView showsVerticalScrollIndicator={ false }>
+                    <TitleContainer>
+                        <PrimaryHotelText>Комната { room.room }</PrimaryHotelText>
+                    </TitleContainer>
+                    <DescriptionContainer>
+                        <PrimaryText>Описание: </PrimaryText>
+                        <GeneralText>{ room.description }</GeneralText>
+                    </DescriptionContainer>
+                    <InfoContainer>
+                        <PrimaryText>Цена: </PrimaryText>
+                        <GeneralText>{ room.price }$</GeneralText>
+                    </InfoContainer>
+                    <InfoContainer>
+                        <PrimaryText>Тип: </PrimaryText>
+                        <GeneralText>{ room.type }</GeneralText>
+                    </InfoContainer>
+                    { roomAccessibility(room.accessibility) }
+                    <ButtonsContainer>
+                        <CustomButton text='Назад' textColor='white' backgroundColor='#5A58FF' onPress={ () => goBack() } />
+                    </ButtonsContainer>
+                </ScrollView>
+            </Container>
+        </Container>
+    );
 };
 
-const style = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#E6DFCF',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    infoContainer: {
-        alignItems: 'flex-start',
-        justifyContent: 'flex-start',
-        flexDirection: 'row',
-        padding: 10
-    },
-    titleContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    title: {
-        margin: 20,
-        fontSize: 24,
-        fontWeight: '600'
-    },
-    subtitle: {
-        fontWeight: '500',
-        fontSize: 20
-    },
-    description: {
-        padding: 10
-    },
-    text: {
-        fontSize: 20
-    },
-    accessibilityContainer: {
-        alignItems: 'flex-start',
-        justifyContent: 'flex-start',
-        padding: 10
-    },
-    access: {
-        fontSize: 20,
-        color: 'green'
-    },
-    notAccess: {
-        fontSize: 20,
-        color: 'red'
-    },
-    buttonContainer: {
-        marginLeft: -10,
-        alignItems: 'flex-start',
-        justifyContent: 'flex-start'
-    }
-});
+const Container = styled.SafeAreaView`
+    flex: 1;
+    backgroundColor: #E6DFCF;
+    alignItems: center;
+    justifyContent: center;
+`;
+
+const TitleContainer = styled.View`
+    alignItems: center;
+    justifyContent: center;
+`;
+
+const DescriptionContainer = styled.View`
+    padding: 10px;
+    alignItems: flex-start;
+`;
+
+const InfoContainer = styled.View`
+    alignItems: flex-start;
+    justifyContent: flex-start;
+    flexDirection: row;
+    padding: 10px
+`;
+
+const LoadingText = styled.Text`
+    font-size: 30px;
+    text-align: center;
+    color: #B3ABAE;
+`;
+
+const PrimaryText = styled.Text`
+    font-size: 24px;
+    text-align: center;
+`;
+
+const PrimaryHotelText = styled.Text`
+    font-size: 24px;
+    font-weight: bold;
+`;
+
+const GeneralText = styled.Text`
+    font-size: 24px;
+    color: #7D7D7D;
+    margin-left: 5px
+`;
+
+const ButtonsContainer = styled.View`
+    margin: 10px;
+    alignItems: center;
+`;
+
+const AccessibilityContainer = styled.View`
+    alignItems: center;
+    justifyContent: center;
+    padding: 10px
+`;
+
+const AccessibilityText = styled.Text`
+    font-size: 22px;
+    font-weight: bold;    
+    color: ${ props => props.color }
+`;
 
 export default Room;
