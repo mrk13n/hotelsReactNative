@@ -11,7 +11,7 @@ const Authorization = props => {
     const [isError, setIsError] = useState(false);
     const [post, setPost] = useState(null);
     const [log, setLog] = useState(false);
-    const URL = 'http://192.168.1.11:3030/api/login/';
+    const URL = 'http://138.68.12.218/api/login/';
 
     useEffect(() => {
         const abortController = new AbortController();

@@ -6,7 +6,7 @@ const Home = props => {
     const { navigate } = props.navigation;
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
-    const URL = 'http://192.168.1.11:3030/api/checkLogin/';
+    const URL = 'http://138.68.12.218:80/api/checkLogin/';
 
     useEffect(() => {
         const abortController = new AbortController();

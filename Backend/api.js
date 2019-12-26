@@ -18,7 +18,7 @@ exports.checkLogin = (req, res) => {
     })
 };
 
-exports.registration = (req, res) => {
+exports.registration = async (req, res) => {
     const firstName = req.body.firstName;
     const lastName = req.body.lastName;
     const secondName = req.body.secondName;
@@ -26,19 +26,19 @@ exports.registration = (req, res) => {
     const password = req.body.password;
     const balance = 0;
 
-    Users.findOne(
+    await Users.findOne(
         {
             email: email
         },
-        (err, user) => {
+        async (err, user) => {
             if (err) res.send(err);
             if (user) {
                 res.send({
                     isExist: true
                 });
             } else {
-                bcrypt.genSalt(saltRounds, (err, salt) => {
-                    bcrypt.hash(password, salt, (err, hash) => {
+                await bcrypt.genSalt(saltRounds, async (err, salt) => {
+                    await bcrypt.hash(password, salt, async (err, hash) => {
                         const newUser = new Users({
                             firstName: firstName,
                             lastName: lastName,
@@ -48,7 +48,7 @@ exports.registration = (req, res) => {
                             balance: balance
                         });
 
-                        newUser.save((err, user) => {
+                        await newUser.save((err, user) => {
                             if (err) res.send(err);
                             req.session.user = {
                                 firstName: user.firstName,
