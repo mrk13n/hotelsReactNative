@@ -13,7 +13,7 @@ const Rooms = props => {
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
     const [exit, setExit] = useState(false);
-    const URL = 'http://138.68.12.218/api/getRooms/';
+    const URL = 'http://192.168.1.11:3030/api/getRooms/';
     Exit(exit, navigate, setIsError);
 
     useEffect(() => {

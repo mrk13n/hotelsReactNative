@@ -15,7 +15,7 @@ const Registration = props => {
     const [isError, setIsError] = useState(false);
     const [post, setPost] = useState(null);
     const [log, setLog] = useState(false);
-    const URL = 'http://138.68.12.218/api/registration/';
+    const URL = 'http://192.168.1.11:3030/api/registration/';
 
     useEffect(() => {
         const abortController = new AbortController();
